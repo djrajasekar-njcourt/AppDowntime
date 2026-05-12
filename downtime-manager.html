@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DowntimeOps — Enterprise Scheduler</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7f8fa;
+    --surface: #fff;
+    --surface2: #f3f4f8;
+    --surface3: #e9eaf0;
+    --border: #d3d6e0;
+    --border2: #c2c6d6;
+    --text: #23243a;
+    --text2: #555c70;
+    --text3: #8b90a0;
+    --accent: #f0c040;
+    --accent2: #e8a020;
+    --accent-dim: rgba(240,192,64,0.13);
+    --accent-dim2: rgba(240,192,64,0.07);
+    --red: #e05060;
+    --red-dim: rgba(224,80,96,0.13);
+    --green: #40c880;
+    --green-dim: rgba(64,200,128,0.13);
+    --blue: #5090f0;
+    --blue-dim: rgba(80,144,240,0.13);
+    --orange: #f07040;
+    --orange-dim: rgba(240,112,64,0.13);
+    --mono: 'Space Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+    --radius: 6px;
+    --radius2: 10px;
+  }
+
+  body.dark-theme {
+    --bg: #181a20;
+    --surface: #23242a;
+    --surface2: #23242a;
+    --surface3: #23242a;
+    --border: #2c2e36;
+    --border2: #393b44;
+    --text: #f7f8fa;
+    --text2: #bfc2d0;
+    --text3: #8b90a0;
+    --accent: #f0c040;
+    --accent2: #e8a020;
+    --accent-dim: rgba(240,192,64,0.13);
+    --accent-dim2: rgba(240,192,64,0.07);
+    --red: #e05060;
+    --red-dim: rgba(224,80,96,0.13);
+    --green: #40c880;
+    --green-dim: rgba(64,200,128,0.13);
+    --blue: #5090f0;
+    --blue-dim: rgba(80,144,240,0.13);
+    --orange: #f07040;
+    --orange-dim: rgba(240,112,64,0.13);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+
+  /* ── Header ── */
+  header {
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    padding: 0 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 56px;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo {
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .logo-mark {
+    width: 28px; height: 28px;
+    background: var(--accent);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: #000;
+  }
+  .logo-text { color: var(--text); }
+  .logo-text span { color: var(--accent); }
+  .header-right {
+    display: flex; align-items: center; gap: 16px;
+  }
+  #theme-toggle-btn {
+    font-family: var(--mono); font-size: 13px;
+    background: transparent; border: 1px solid var(--border2);
+    color: var(--text2); padding: 4px 12px; border-radius: var(--radius);
+    cursor: pointer; letter-spacing: 0.03em; transition: all .15s;
+    margin-left: 8px;
+  }
+  #theme-toggle-btn:hover { border-color: var(--accent); color: var(--accent); }
+  #session-badge {
+    font-family: var(--mono); font-size: 11px;
+    background: var(--accent-dim); border: 1px solid rgba(240,192,64,0.25);
+    color: var(--accent); padding: 3px 10px; border-radius: 3px;
+    letter-spacing: 0.04em;
+  }
+  #switch-user-btn {
+    font-family: var(--mono); font-size: 11px;
+    background: transparent; border: 1px solid var(--border2);
+    color: var(--text2); padding: 4px 12px; border-radius: var(--radius);
+    cursor: pointer; letter-spacing: 0.03em; transition: all .15s;
+  }
+  #switch-user-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── Layout ── */
+  .app-wrap {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: calc(100vh - 56px);
+  }
+
+  /* ── Sidebar ── */
+  aside {
+    border-right: 1px solid var(--border);
+    background: var(--surface);
+    padding: 24px 16px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .nav-section-label {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em;
+    color: var(--text3); padding: 8px 12px 4px; text-transform: uppercase;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 12px; border-radius: var(--radius);
+    cursor: pointer; color: var(--text2);
+    font-size: 13.5px; font-weight: 300;
+    transition: all .15s; border: 1px solid transparent;
+    user-select: none;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active {
+    background: var(--accent-dim); border-color: rgba(240,192,64,0.2);
+    color: var(--accent); font-weight: 500;
+  }
+  .nav-icon { font-size: 15px; width: 18px; text-align: center; }
+  .nav-count {
+    margin-left: auto; font-family: var(--mono); font-size: 10px;
+    background: var(--surface3); color: var(--text3);
+    padding: 2px 7px; border-radius: 10px;
+  }
+  .nav-item.active .nav-count { background: rgba(240,192,64,0.2); color: var(--accent); }
+  .sidebar-sep { height: 1px; background: var(--border); margin: 8px 0; }
+
+  /* ── Main ── */
+  main {
+    padding: 28px 32px;
+    display: flex; flex-direction: column; gap: 24px;
+    overflow-y: auto;
+  }
+
+  /* ── Page Title ── */
+  .page-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+  }
+  .page-title {
+    font-size: 22px; font-weight: 700; color: var(--text);
+    letter-spacing: -0.02em;
+  }
+  .page-subtitle {
+    font-size: 13px; color: var(--text2); margin-top: 3px; font-weight: 300;
+  }
+
+  /* ── Stat Cards ── */
+  .stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+  }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius2); padding: 18px 20px;
+    display: flex; flex-direction: column; gap: 6px;
+    transition: border-color .15s;
+  }
+  .stat-card:hover { border-color: var(--border2); }
+  .stat-label { font-family: var(--mono); font-size: 10px; color: var(--text3); letter-spacing: 0.06em; text-transform: uppercase; }
+  .stat-value { font-size: 28px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
+  .stat-sub { font-size: 12px; color: var(--text3); font-weight: 300; }
+  .stat-yellow .stat-value { color: var(--accent); }
+  .stat-red .stat-value { color: var(--red); }
+  .stat-green .stat-value { color: var(--green); }
+  .stat-blue .stat-value { color: var(--blue); }
+
+  /* ── Section panels ── */
+  .panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius2); overflow: hidden;
+  }
+  .panel-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .panel-title {
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.05em;
+    color: var(--text); text-transform: uppercase;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .panel-title-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--accent); display: inline-block;
+  }
+  .panel-body { padding: 20px; }
+
+  /* ── Form Styles ── */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group.full { grid-column: 1 / -1; }
+  label {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em;
+    color: var(--text3); text-transform: uppercase;
+  }
+  input, select, textarea {
+    background: var(--surface2); border: 1px solid var(--border2);
+    color: var(--text); border-radius: var(--radius);
+    padding: 8px 12px; font-family: var(--sans); font-size: 13.5px;
+    outline: none; transition: border-color .15s, box-shadow .15s;
+    width: 100%;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-dim);
+  }
+  select option { background: var(--surface2); }
+  textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert(0.5); cursor: pointer; }
+
+  /* ── Buttons ── */
+  .btn-row { display: flex; gap: 10px; align-items: center; margin-top: 4px; }
+  .btn {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.04em;
+    padding: 8px 18px; border-radius: var(--radius); border: 1px solid transparent;
+    cursor: pointer; transition: all .15s; white-space: nowrap;
+  }
+  .btn-primary {
+    background: var(--accent); color: #000; font-weight: 700;
+    border-color: var(--accent);
+  }
+  .btn-primary:hover { background: var(--accent2); border-color: var(--accent2); }
+  .btn-secondary {
+    background: transparent; color: var(--text2); border-color: var(--border2);
+  }
+  .btn-secondary:hover { border-color: var(--text2); color: var(--text); }
+  .btn-danger {
+    background: transparent; color: var(--red); border-color: rgba(224,80,96,0.3);
+  }
+  .btn-danger:hover { background: var(--red-dim); border-color: var(--red); }
+  .btn-edit {
+    background: transparent; color: var(--blue); border-color: rgba(80,144,240,0.3);
+    font-size: 10px; padding: 4px 10px;
+  }
+  .btn-edit:hover { background: var(--blue-dim); border-color: var(--blue); }
+  .btn-del {
+    background: transparent; color: var(--red); border-color: rgba(224,80,96,0.3);
+    font-size: 10px; padding: 4px 10px;
+  }
+  .btn-del:hover { background: var(--red-dim); border-color: var(--red); }
+  .btn:disabled {
+    opacity: 0.35; cursor: not-allowed;
+  }
+
+  /* ── Filter bar ── */
+  .filter-bar {
+    display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;
+  }
+  .filter-bar .form-group { min-width: 160px; }
+  .filter-bar label { font-size: 10px; }
+
+  /* ── Table ── */
+  .table-wrap { overflow-x: auto; }
+  table {
+    width: 100%; border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead { border-bottom: 2px solid var(--border2); }
+  th {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em;
+    color: var(--text3); text-transform: uppercase;
+    text-align: left; padding: 10px 14px; white-space: nowrap;
+  }
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background .1s;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--accent-dim2); }
+  td { padding: 11px 14px; vertical-align: middle; color: var(--text2); }
+  td.app-name { color: var(--text); font-weight: 500; }
+  td.mono { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+  .td-actions { display: flex; gap: 6px; }
+
+  /* ── Status badge ── */
+  .badge {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.04em;
+    padding: 3px 9px; border-radius: 3px; white-space: nowrap;
+  }
+  .badge-scheduled { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(80,144,240,0.2); }
+  .badge-active    { background: var(--red-dim);  color: var(--red);  border: 1px solid rgba(224,80,96,0.2); animation: pulse 2s infinite; }
+  .badge-completed { background: var(--green-dim);color: var(--green);border: 1px solid rgba(64,200,128,0.2); }
+  .badge-cancelled { background: var(--surface3); color: var(--text3); border: 1px solid var(--border); }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.55} }
+
+  /* ── Audit Log ── */
+  .audit-log { display: flex; flex-direction: column; gap: 0; max-height: 280px; overflow-y: auto; }
+  .audit-entry {
+    display: flex; gap: 14px; align-items: flex-start;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+    font-size: 12.5px;
+  }
+  .audit-entry:last-child { border-bottom: none; }
+  .audit-time { font-family: var(--mono); font-size: 10px; color: var(--text3); white-space: nowrap; margin-top: 2px; min-width: 60px; }
+  .audit-icon { font-size: 14px; margin-top: 1px; }
+  .audit-text { color: var(--text2); line-height: 1.4; }
+  .audit-text strong { color: var(--text); font-weight: 500; }
+  .audit-text .highlight { color: var(--accent); }
+
+  /* ── Role Selector Modal ── */
+  #role-modal {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.88);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(6px);
+  }
+  .modal-card {
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 14px; padding: 40px 44px;
+    width: 520px; max-width: 95vw;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+  }
+  .modal-eyebrow {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+    color: var(--accent); text-transform: uppercase; margin-bottom: 12px;
+  }
+  .modal-title { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; }
+  .modal-sub { font-size: 13px; color: var(--text2); margin-bottom: 32px; font-weight: 300; }
+  .user-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+  .user-option {
+    border: 1px solid var(--border2); border-radius: var(--radius2);
+    padding: 14px 18px; cursor: pointer;
+    transition: all .15s; display: flex; align-items: center; gap: 14px;
+  }
+  .user-option:hover { border-color: var(--accent); background: var(--accent-dim2); }
+  .user-option.selected { border-color: var(--accent); background: var(--accent-dim); }
+  .user-avatar {
+    width: 38px; height: 38px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px; flex-shrink: 0;
+  }
+  .user-info .u-name { font-size: 14px; font-weight: 500; }
+  .user-info .u-role {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.04em; margin-top: 2px;
+  }
+  .role-master { color: var(--accent); }
+  .role-app { color: var(--blue); }
+  .av-master { background: rgba(240,192,64,0.15); }
+  .av-app    { background: rgba(80,144,240,0.15); }
+  .modal-continue {
+    width: 100%; font-family: var(--mono); font-size: 12px; letter-spacing: 0.05em;
+    background: var(--accent); color: #000; font-weight: 700;
+    border: none; border-radius: var(--radius); padding: 13px;
+    cursor: pointer; transition: background .15s;
+  }
+  .modal-continue:hover { background: var(--accent2); }
+
+  /* ── Empty state ── */
+  .empty-state {
+    text-align: center; padding: 48px 20px;
+    color: var(--text3); font-size: 13px;
+  }
+  .empty-state .empty-icon { font-size: 32px; margin-bottom: 10px; opacity: .5; }
+
+  /* ── Notification Toast ── */
+  #toast-container {
+    position: fixed; bottom: 24px; right: 24px; z-index: 2000;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .toast {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.03em;
+    padding: 10px 16px; border-radius: var(--radius);
+    animation: toastIn .2s ease;
+    max-width: 320px;
+  }
+  .toast-success { background: var(--green); color: #000; }
+  .toast-error   { background: var(--red);   color: #fff; }
+  .toast-info    { background: var(--blue);  color: #fff; }
+  @keyframes toastIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+
+  /* ── App access tag ── */
+  .app-tag {
+    display: inline-block; font-family: var(--mono); font-size: 10px;
+    padding: 2px 8px; border-radius: 3px; margin: 2px;
+    background: var(--surface3); color: var(--text2); border: 1px solid var(--border);
+  }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+  /* ── Access denied ── */
+  .access-denied {
+    background: var(--red-dim); border: 1px solid rgba(224,80,96,0.2);
+    color: var(--red); border-radius: var(--radius); padding: 10px 14px;
+    font-size: 12.5px; font-family: var(--mono); letter-spacing: 0.02em;
+    margin-bottom: 12px; display: none;
+  }
+
+  /* ── Status dot ── */
+  .status-indicator {
+    display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+    margin-right: 6px; vertical-align: middle;
+  }
+  .si-active { background: var(--red); box-shadow: 0 0 0 2px var(--red-dim); animation: pulse 2s infinite; }
+  .si-scheduled { background: var(--blue); }
+  .si-completed { background: var(--green); }
+  .si-cancelled { background: var(--text3); }
+
+  /* ── Edit mode highlight ── */
+  .form-edit-mode {
+    border: 1px solid rgba(80,144,240,0.3);
+    border-radius: var(--radius2);
+    padding: 18px;
+    background: var(--blue-dim);
+    margin-bottom: 4px;
+  }
+  .edit-mode-label {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em;
+    color: var(--blue); text-transform: uppercase; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 6px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Role Modal ── -->
+<div id="role-modal">
+  <div class="modal-card">
+    <div class="modal-eyebrow">⚡ DowntimeOps</div>
+    <div class="modal-title">Select Your Session</div>
+    <div class="modal-sub">Choose a user account to simulate. Each role has different access levels.</div>
+    <div class="user-grid" id="user-grid"></div>
+    <button class="modal-continue" onclick="startSession()">CONTINUE →</button>
+  </div>
+</div>
+
+<!-- ── Header ── -->
+<header>
+  <div class="logo">
+    <div class="logo-mark">DO</div>
+    <div class="logo-text">Downtime<span>Ops</span></div>
+  </div>
+  <div class="header-right">
+    <div id="session-badge">NO SESSION</div>
+    <button id="switch-user-btn" onclick="openModal()">⇄ Switch User</button>
+      <button id="theme-toggle-btn" onclick="toggleTheme()">🌙 Dark Mode</button>
+  </div>
+</header>
+
+<!-- ── App Layout ── -->
+<div class="app-wrap">
+  <!-- Sidebar -->
+  <aside>
+    <div class="nav-section-label">Navigation</div>
+    <div class="nav-item active" onclick="showView('dashboard')" id="nav-dashboard">
+      <span class="nav-icon">◈</span> Dashboard <span class="nav-count" id="nc-active">0</span>
+    </div>
+    <div class="nav-item" onclick="showView('records')" id="nav-records">
+      <span class="nav-icon">☰</span> All Records <span class="nav-count" id="nc-total">0</span>
+    </div>
+    <div class="nav-item" onclick="showView('create')" id="nav-create">
+      <span class="nav-icon">＋</span> Schedule Downtime
+    </div>
+    <div class="sidebar-sep"></div>
+    <div class="nav-section-label">Info</div>
+    <div class="nav-item" onclick="showView('audit')" id="nav-audit">
+      <span class="nav-icon">◎</span> Audit Trail <span class="nav-count" id="nc-audit">0</span>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main id="main-content">
+    <!-- Dashboard View -->
+    <div id="view-dashboard">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Dashboard</div>
+          <div class="page-subtitle">Overview of active and upcoming downtimes</div>
+        </div>
+      </div>
+      <div class="stats-row" id="stats-row"></div>
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title"><span class="panel-title-dot" style="background:var(--red)"></span>Active & Upcoming</div>
+        </div>
+        <div class="panel-body">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Application</th>
+                  <th>Status</th>
+                  <th>Start Time</th>
+                  <th>End Time</th>
+                  <th>Message</th>
+                  <th>Created By</th>
+                </tr>
+              </thead>
+              <tbody id="dashboard-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Records View -->
+    <div id="view-records" style="display:none">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Downtime Records</div>
+          <div class="page-subtitle" id="records-subtitle">All downtime records</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title"><span class="panel-title-dot"></span>Filter Records</div>
+        </div>
+        <div class="panel-body">
+          <div class="filter-bar">
+            <div class="form-group">
+              <label>Application</label>
+              <select id="filter-app" onchange="renderRecords()">
+                <option value="">All Applications</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Status</label>
+              <select id="filter-status" onchange="renderRecords()">
+                <option value="">All Statuses</option>
+                <option value="scheduled">Scheduled</option>
+                <option value="active">Active</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>From Date</label>
+              <input type="date" id="filter-date-from" onchange="renderRecords()">
+            </div>
+            <div class="form-group">
+              <label>To Date</label>
+              <input type="date" id="filter-date-to" onchange="renderRecords()">
+            </div>
+            <div class="form-group" style="justify-content:flex-end; margin-top:auto;">
+              <button class="btn btn-secondary" onclick="clearFilters()">Clear Filters</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title"><span class="panel-title-dot"></span>Records</div>
+          <span id="records-count" style="font-family:var(--mono);font-size:11px;color:var(--text3)"></span>
+        </div>
+        <div class="panel-body">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Application</th>
+                  <th>Status</th>
+                  <th>Start Time</th>
+                  <th>End Time</th>
+                  <th>Message</th>
+                  <th>Created By</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="records-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Create/Edit View -->
+    <div id="view-create" style="display:none">
+      <div class="page-header">
+        <div>
+          <div class="page-title" id="form-page-title">Schedule Downtime</div>
+          <div class="page-subtitle">Create a new downtime window for an application</div>
+        </div>
+      </div>
+      <div class="panel" style="max-width:700px">
+        <div class="panel-header">
+          <div class="panel-title"><span class="panel-title-dot"></span><span id="form-panel-label">New Record</span></div>
+        </div>
+        <div class="panel-body">
+          <div id="access-denied-msg" class="access-denied">⛔ Access Denied — You do not have permission to manage this application.</div>
+          <div id="edit-mode-indicator" style="display:none">
+            <div class="edit-mode-label">✎ Editing Record <span id="edit-record-id-label"></span></div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Application *</label>
+              <select id="form-app" onchange="checkAppAccess()">
+                <option value="">— Select Application —</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Status</label>
+              <select id="form-status">
+                <option value="scheduled">Scheduled</option>
+                <option value="active">Active</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Start Time *</label>
+              <input type="datetime-local" id="form-start">
+            </div>
+            <div class="form-group">
+              <label>End Time *</label>
+              <input type="datetime-local" id="form-end">
+            </div>
+            <div class="form-group full">
+              <label>Downtime Message / Description *</label>
+              <textarea id="form-message" placeholder="Describe the nature of the downtime, affected services, and expected impact…"></textarea>
+            </div>
+          </div>
+          <div class="btn-row" style="margin-top:16px">
+            <button class="btn btn-primary" id="btn-create" onclick="submitForm()">CREATE RECORD</button>
+            <button class="btn btn-secondary" id="btn-cancel-edit" style="display:none" onclick="cancelEdit()">CANCEL EDIT</button>
+            <button class="btn btn-danger" id="btn-delete-edit" style="display:none" onclick="deleteCurrentEdit()">DELETE RECORD</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Audit Trail View -->
+    <div id="view-audit" style="display:none">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Audit Trail</div>
+          <div class="page-subtitle">Complete log of all actions performed in this session</div>
+        </div>
+        <button class="btn btn-secondary" onclick="clearAudit()">Clear Log</button>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title"><span class="panel-title-dot" style="background:var(--green)"></span>Action Log</div>
+        </div>
+        <div class="panel-body">
+          <div class="audit-log" id="audit-log"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<script>
+// ═══════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════
+
+// THEME TOGGLE
+function setTheme(theme) {
+  document.body.classList.toggle('dark-theme', theme === 'dark');
+  document.getElementById('theme-toggle-btn').textContent = theme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+  localStorage.setItem('theme', theme);
+}
+function toggleTheme() {
+  const isDark = document.body.classList.contains('dark-theme');
+  setTheme(isDark ? 'light' : 'dark');
+}
+// On load, set theme from localStorage or system preference
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('theme');
+  if (saved) setTheme(saved);
+  else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) setTheme('dark');
+  else setTheme('light');
+});
+
+const APPS = [
+  { id: 'app1', name: 'Customer Portal', team: 'Retail' },
+  { id: 'app2', name: 'Payment Gateway', team: 'Finance' },
+  { id: 'app3', name: 'Analytics Engine', team: 'Data' },
+  { id: 'app4', name: 'Identity Service', team: 'Infra' },
+  { id: 'app5', name: 'Notification Hub', team: 'Platform' },
+  { id: 'app6', name: 'Inventory Manager', team: 'Retail' },
+];
+
+const USERS = [
+  { id: 'u1', name: 'Alex Chen',    role: 'master',  avatar: '👑', apps: null,
+    desc: 'Full access to all applications' },
+  { id: 'u2', name: 'Jordan Park',  role: 'master',  avatar: '🛡️', apps: null,
+    desc: 'Full access to all applications' },
+  { id: 'u3', name: 'Sam Rivera',   role: 'app',     avatar: '⚙️', apps: ['app1','app6'],
+    desc: 'Customer Portal · Inventory Manager' },
+  { id: 'u4', name: 'Taylor Kim',   role: 'app',     avatar: '🔧', apps: ['app2','app4'],
+    desc: 'Payment Gateway · Identity Service' },
+  { id: 'u5', name: 'Morgan Lee',   role: 'app',     avatar: '📊', apps: ['app3','app5'],
+    desc: 'Analytics Engine · Notification Hub' },
+];
+
+function dtOffset(h=0, d=0) {
+  const n = new Date();
+  n.setDate(n.getDate() + d);
+  n.setHours(n.getHours() + h, 0, 0, 0);
+  return n.toISOString().slice(0,16);
+}
+
+let downtimes = [
+  { id: 'DT-001', appId:'app1', status:'active',    start: dtOffset(-1), end: dtOffset(2),    message:'Emergency SSL certificate renewal for the Customer Portal. Users may experience login interruptions.', createdBy:'u1', createdAt: new Date(Date.now()-3600000).toISOString() },
+  { id: 'DT-002', appId:'app2', status:'scheduled', start: dtOffset(4),  end: dtOffset(6),    message:'Scheduled maintenance window to apply PCI-DSS compliance patches to the Payment Gateway service.', createdBy:'u2', createdAt: new Date(Date.now()-7200000).toISOString() },
+  { id: 'DT-003', appId:'app3', status:'scheduled', start: dtOffset(24, 1), end: dtOffset(28,1), message:'Infrastructure migration: Analytics Engine moving to new Kubernetes cluster. Zero-downtime migration not possible for this version.', createdBy:'u1', createdAt: new Date(Date.now()-10800000).toISOString() },
+  { id: 'DT-004', appId:'app4', status:'completed', start: dtOffset(-6), end: dtOffset(-2),   message:'Identity Service database index rebuild. Completed successfully — no data loss.', createdBy:'u2', createdAt: new Date(Date.now()-86400000).toISOString() },
+  { id: 'DT-005', appId:'app5', status:'cancelled', start: dtOffset(10), end: dtOffset(14),   message:'Planned firmware upgrade cancelled due to vendor delay. Rescheduled for next sprint.', createdBy:'u1', createdAt: new Date(Date.now()-172800000).toISOString() },
+  { id: 'DT-006', appId:'app6', status:'scheduled', start: dtOffset(8),  end: dtOffset(9),    message:'Brief restart window to apply Inventory Manager hotfix #2841 for barcode scanner integration bug.', createdBy:'u1', createdAt: new Date(Date.now()-900000).toISOString() },
+];
+
+let auditLog = [];
+let currentUser = null;
+let editingId = null;
+
+// ═══════════════════════════════════════════
+//  MODAL
+// ═══════════════════════════════════════════
+
+function openModal() {
+  renderUserGrid();
+  document.getElementById('role-modal').style.display = 'flex';
+}
+
+function renderUserGrid() {
+  const grid = document.getElementById('user-grid');
+  grid.innerHTML = USERS.map(u => `
+    <div class="user-option ${currentUser && currentUser.id===u.id?'selected':''}"
+         onclick="selectUser('${u.id}')" id="uo-${u.id}">
+      <div class="user-avatar ${u.role==='master'?'av-master':'av-app'}">${u.avatar}</div>
+      <div class="user-info">
+        <div class="u-name">${u.name}</div>
+        <div class="u-role ${u.role==='master'?'role-master':'role-app'}">
+          ${u.role==='master' ? '★ MASTER ADMIN' : '◆ APP ADMIN'} &nbsp;·&nbsp; ${u.desc}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function selectUser(uid) {
+  document.querySelectorAll('.user-option').forEach(el => el.classList.remove('selected'));
+  document.getElementById('uo-'+uid).classList.add('selected');
+  currentUser = USERS.find(u=>u.id===uid);
+}
+
+function startSession() {
+  if (!currentUser) { alert('Please select a user.'); return; }
+  document.getElementById('role-modal').style.display = 'none';
+  document.getElementById('session-badge').textContent =
+    currentUser.name.toUpperCase() + ' · ' + (currentUser.role==='master'?'MASTER':'APP ADMIN');
+  addAudit('login', `Session started as <strong>${currentUser.name}</strong> (${currentUser.role==='master'?'Master Admin':'App Admin'})`);
+  refreshAll();
+  showView('dashboard');
+}
+
+// ═══════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════
+
+const VIEWS = ['dashboard','records','create','audit'];
+
+function showView(v) {
+  VIEWS.forEach(name => {
+    document.getElementById('view-'+name).style.display = name===v?'':'none';
+    const n = document.getElementById('nav-'+name);
+    if (n) n.classList.toggle('active', name===v);
+  });
+  if (v==='records') renderRecords();
+  if (v==='dashboard') renderDashboard();
+  if (v==='audit') renderAudit();
+  if (v==='create' && !editingId) resetForm();
+}
+
+// ═══════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════
+
+function fmtDT(s) {
+  if (!s) return '—';
+  const d = new Date(s);
+  return d.toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+function fmtTime(s) {
+  if (!s) return '—';
+  return new Date(s).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+}
+function appName(id) { return (APPS.find(a=>a.id===id)||{name:'Unknown'}).name; }
+function userName(id) { return (USERS.find(u=>u.id===id)||{name:'Unknown'}).name; }
+function nextId() { return 'DT-' + String(downtimes.length + 1).padStart(3,'0'); }
+
+function canEdit(dt) {
+  if (!currentUser) return false;
+  if (currentUser.role==='master') return true;
+  return currentUser.apps && currentUser.apps.includes(dt.appId);
+}
+function canAccessApp(appId) {
+  if (!currentUser) return false;
+  if (currentUser.role==='master') return true;
+  return currentUser.apps && currentUser.apps.includes(appId);
+}
+
+function statusBadge(s) {
+  return `<span class="badge badge-${s}">${s.toUpperCase()}</span>`;
+}
+function statusDot(s) {
+  return `<span class="status-indicator si-${s}"></span>`;
+}
+
+// ═══════════════════════════════════════════
+//  DASHBOARD
+// ═══════════════════════════════════════════
+
+function renderDashboard() {
+  const visible = visibleDowntimes();
+  const active = visible.filter(d=>d.status==='active');
+  const scheduled = visible.filter(d=>d.status==='scheduled');
+  const completed = visible.filter(d=>d.status==='completed');
+
+  document.getElementById('stats-row').innerHTML = `
+    <div class="stat-card stat-red">
+      <div class="stat-label">Active Now</div>
+      <div class="stat-value">${active.length}</div>
+      <div class="stat-sub">Currently impacting users</div>
+    </div>
+    <div class="stat-card stat-blue">
+      <div class="stat-label">Scheduled</div>
+      <div class="stat-value">${scheduled.length}</div>
+      <div class="stat-sub">Upcoming maintenance</div>
+    </div>
+    <div class="stat-card stat-green">
+      <div class="stat-label">Completed</div>
+      <div class="stat-value">${completed.length}</div>
+      <div class="stat-sub">Successfully resolved</div>
+    </div>
+    <div class="stat-card stat-yellow">
+      <div class="stat-label">Total Records</div>
+      <div class="stat-value">${visible.length}</div>
+      <div class="stat-sub">Your accessible records</div>
+    </div>
+  `;
+
+  const relevant = visible.filter(d=>d.status==='active'||d.status==='scheduled')
+                          .sort((a,b)=>new Date(a.start)-new Date(b.start));
+  const tbody = document.getElementById('dashboard-table-body');
+  tbody.innerHTML = relevant.length ? relevant.map(d=>`
+    <tr>
+      <td class="app-name">${appName(d.appId)}</td>
+      <td>${statusDot(d.status)}${statusBadge(d.status)}</td>
+      <td class="mono">${fmtDT(d.start)}</td>
+      <td class="mono">${fmtDT(d.end)}</td>
+      <td style="max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.message}</td>
+      <td>${userName(d.createdBy)}</td>
+    </tr>
+  `).join('') : `<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">✓</div>No active or upcoming downtimes</div></td></tr>`;
+
+  // Update nav counts
+  document.getElementById('nc-active').textContent = active.length;
+  document.getElementById('nc-total').textContent = visible.length;
+  document.getElementById('nc-audit').textContent = auditLog.length;
+}
+
+// ═══════════════════════════════════════════
+//  RECORDS TABLE
+// ═══════════════════════════════════════════
+
+function visibleDowntimes() {
+  if (!currentUser) return [];
+  if (currentUser.role==='master') return downtimes;
+  return downtimes.filter(d => currentUser.apps && currentUser.apps.includes(d.appId));
+}
+
+function renderRecords() {
+  const appF = document.getElementById('filter-app').value;
+  const statusF = document.getElementById('filter-status').value;
+  const dateFrom = document.getElementById('filter-date-from').value;
+  const dateTo = document.getElementById('filter-date-to').value;
+
+  let records = visibleDowntimes().filter(d => {
+    if (appF && d.appId !== appF) return false;
+    if (statusF && d.status !== statusF) return false;
+    if (dateFrom && new Date(d.start) < new Date(dateFrom)) return false;
+    if (dateTo && new Date(d.start) > new Date(dateTo+'T23:59')) return false;
+    return true;
+  });
+
+  document.getElementById('records-count').textContent = `${records.length} record${records.length!==1?'s':''}`;
+  if (currentUser && currentUser.role==='app') {
+    document.getElementById('records-subtitle').textContent =
+      'Records for: ' + (currentUser.apps||[]).map(appName).join(', ');
+  } else {
+    document.getElementById('records-subtitle').textContent = 'All downtime records';
+  }
+
+  const tbody = document.getElementById('records-table-body');
+  tbody.innerHTML = records.length ? records.map(d=>`
+    <tr>
+      <td class="mono" style="color:var(--text3)">${d.id}</td>
+      <td class="app-name">${appName(d.appId)}</td>
+      <td>${statusDot(d.status)}${statusBadge(d.status)}</td>
+      <td class="mono">${fmtDT(d.start)}</td>
+      <td class="mono">${fmtDT(d.end)}</td>
+      <td style="max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${d.message}">${d.message}</td>
+      <td>${userName(d.createdBy)}</td>
+      <td>
+        ${canEdit(d) ? `
+          <div class="td-actions">
+            <button class="btn btn-edit" onclick="editRecord('${d.id}')">EDIT</button>
+            <button class="btn btn-del" onclick="deleteRecord('${d.id}')">DELETE</button>
+          </div>
+        ` : '<span style="color:var(--text3);font-size:11px;font-family:var(--mono)">— no access</span>'}
+      </td>
+    </tr>
+  `).join('') : `<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">⊘</div>No records match the current filters</div></td></tr>`;
+}
+
+function clearFilters() {
+  ['filter-app','filter-status'].forEach(id=>document.getElementById(id).value='');
+  ['filter-date-from','filter-date-to'].forEach(id=>document.getElementById(id).value='');
+  renderRecords();
+}
+
+// ═══════════════════════════════════════════
+//  FORM (Create / Edit)
+// ═══════════════════════════════════════════
+
+function populateAppSelect() {
+  const sel = document.getElementById('form-app');
+  const filterSel = document.getElementById('filter-app');
+  const allowedApps = (currentUser && currentUser.role==='app') ? currentUser.apps : null;
+  const opts = APPS.filter(a => !allowedApps || allowedApps.includes(a.id));
+
+  sel.innerHTML = '<option value="">— Select Application —</option>' +
+    opts.map(a=>`<option value="${a.id}">${a.name}</option>`).join('');
+
+  filterSel.innerHTML = '<option value="">All Applications</option>' +
+    (allowedApps ? APPS.filter(a=>allowedApps.includes(a.id)) : APPS)
+      .map(a=>`<option value="${a.id}">${a.name}</option>`).join('');
+}
+
+function resetForm() {
+  editingId = null;
+  document.getElementById('form-app').value = '';
+  document.getElementById('form-status').value = 'scheduled';
+  document.getElementById('form-start').value = '';
+  document.getElementById('form-end').value = '';
+  document.getElementById('form-message').value = '';
+  document.getElementById('access-denied-msg').style.display = 'none';
+  document.getElementById('edit-mode-indicator').style.display = 'none';
+  document.getElementById('btn-create').textContent = 'CREATE RECORD';
+  document.getElementById('btn-cancel-edit').style.display = 'none';
+  document.getElementById('btn-delete-edit').style.display = 'none';
+  document.getElementById('form-page-title').textContent = 'Schedule Downtime';
+  document.getElementById('form-panel-label').textContent = 'New Record';
+}
+
+function checkAppAccess() {
+  const appId = document.getElementById('form-app').value;
+  const msg = document.getElementById('access-denied-msg');
+  msg.style.display = (appId && !canAccessApp(appId)) ? 'block' : 'none';
+}
+
+function submitForm() {
+  const appId = document.getElementById('form-app').value;
+  const status = document.getElementById('form-status').value;
+  const start = document.getElementById('form-start').value;
+  const end = document.getElementById('form-end').value;
+  const message = document.getElementById('form-message').value.trim();
+
+  if (!appId) { showToast('error','Please select an application.'); return; }
+  if (!canAccessApp(appId)) { showToast('error','Access denied for this application.'); return; }
+  if (!start || !end) { showToast('error','Start and end times are required.'); return; }
+  if (new Date(end) <= new Date(start)) { showToast('error','End time must be after start time.'); return; }
+  if (!message) { showToast('error','Please provide a downtime message.'); return; }
+
+  if (editingId) {
+    const idx = downtimes.findIndex(d=>d.id===editingId);
+    const old = downtimes[idx];
+    downtimes[idx] = { ...old, appId, status, start, end, message, updatedBy: currentUser.id, updatedAt: new Date().toISOString() };
+    addAudit('edit', `<strong>${currentUser.name}</strong> updated downtime <span class="highlight">${editingId}</span> for <strong>${appName(appId)}</strong>`);
+    showToast('success', `Record ${editingId} updated.`);
+    resetForm();
+    showView('records');
+  } else {
+    const id = nextId();
+    downtimes.push({ id, appId, status, start, end, message, createdBy: currentUser.id, createdAt: new Date().toISOString() });
+    addAudit('create', `<strong>${currentUser.name}</strong> created downtime <span class="highlight">${id}</span> for <strong>${appName(appId)}</strong>`);
+    showToast('success', `Downtime ${id} scheduled.`);
+    resetForm();
+    showView('records');
+  }
+  refreshAll();
+}
+
+function editRecord(id) {
+  const d = downtimes.find(r=>r.id===id);
+  if (!d) return;
+  if (!canEdit(d)) { showToast('error','Access denied.'); return; }
+  editingId = id;
+  document.getElementById('form-app').value = d.appId;
+  document.getElementById('form-status').value = d.status;
+  document.getElementById('form-start').value = d.start;
+  document.getElementById('form-end').value = d.end;
+  document.getElementById('form-message').value = d.message;
+  document.getElementById('access-denied-msg').style.display = 'none';
+  document.getElementById('edit-mode-indicator').style.display = 'block';
+  document.getElementById('edit-record-id-label').textContent = id;
+  document.getElementById('btn-create').textContent = 'SAVE CHANGES';
+  document.getElementById('btn-cancel-edit').style.display = '';
+  document.getElementById('btn-delete-edit').style.display = '';
+  document.getElementById('form-page-title').textContent = 'Edit Downtime';
+  document.getElementById('form-panel-label').textContent = 'Editing ' + id;
+  showView('create');
+}
+
+function cancelEdit() { resetForm(); showView('records'); }
+
+function deleteCurrentEdit() { deleteRecord(editingId); resetForm(); showView('records'); }
+
+function deleteRecord(id) {
+  const d = downtimes.find(r=>r.id===id);
+  if (!d) return;
+  if (!canEdit(d)) { showToast('error','Access denied.'); return; }
+  if (!confirm(`Delete downtime record ${id}?\nThis action cannot be undone.`)) return;
+  const aName = appName(d.appId);
+  downtimes = downtimes.filter(r=>r.id!==id);
+  addAudit('delete', `<strong>${currentUser.name}</strong> deleted downtime <span class="highlight">${id}</span> for <strong>${aName}</strong>`);
+  showToast('error', `Record ${id} deleted.`);
+  refreshAll();
+  renderRecords();
+}
+
+// ═══════════════════════════════════════════
+//  AUDIT
+// ═══════════════════════════════════════════
+
+const AUDIT_ICONS = { login:'🔑', create:'＋', edit:'✎', delete:'✗', info:'◎' };
+
+function addAudit(type, text) {
+  auditLog.unshift({ type, text, ts: new Date() });
+}
+
+function renderAudit() {
+  const el = document.getElementById('audit-log');
+  document.getElementById('nc-audit').textContent = auditLog.length;
+  el.innerHTML = auditLog.length ? auditLog.map(e=>`
+    <div class="audit-entry">
+      <span class="audit-time">${e.ts.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</span>
+      <span class="audit-icon">${AUDIT_ICONS[e.type]||'◎'}</span>
+      <span class="audit-text">${e.text}</span>
+    </div>
+  `).join('') : `<div class="empty-state"><div class="empty-icon">◎</div>No audit entries yet</div>`;
+}
+
+function clearAudit() {
+  auditLog = [];
+  renderAudit();
+}
+
+// ═══════════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════════
+
+function showToast(type, msg) {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(()=>t.remove(), 2800);
+}
+
+// ═══════════════════════════════════════════
+//  REFRESH
+// ═══════════════════════════════════════════
+
+function refreshAll() {
+  populateAppSelect();
+  renderDashboard();
+  document.getElementById('nc-total').textContent = visibleDowntimes().length;
+  document.getElementById('nc-active').textContent = visibleDowntimes().filter(d=>d.status==='active').length;
+  document.getElementById('nc-audit').textContent = auditLog.length;
+}
+
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
+
+window.onload = () => {
+  renderUserGrid();
+  // Auto-select first user as default highlight
+  selectUser('u1');
+};
+</script>
+</body>
+</html>
